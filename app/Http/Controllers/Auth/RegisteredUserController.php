@@ -33,6 +33,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        $user->assignRole('user');
+
         // Fire the registered event
         event(new Registered($user));
 

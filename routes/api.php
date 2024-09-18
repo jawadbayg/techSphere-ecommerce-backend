@@ -18,3 +18,14 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 
 
 
+// Admin routes
+Route::group(['middleware' => ['role:admin']], function () {
+    Route::resource('products', 'ProductController');
+    Route::resource('users', 'UserController');
+});
+
+// User routes
+Route::group(['middleware' => ['role:user']], function () {
+    Route::get('products', 'ProductController@index');
+    Route::post('buy', 'OrderController@store');
+});
