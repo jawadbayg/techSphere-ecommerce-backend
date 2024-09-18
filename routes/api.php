@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -57,6 +58,21 @@ Route::get('/products-list', [ProductController::class, 'index']);
                 return response()->json(['message' => 'Unauthorized.'], 403);
             });
         });
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::put('/update-profile', function (Request $request) {
+                if (Auth::check() && Auth::user()->role === 'user')  {
+                    return app(App\Http\Controllers\UserController::class)->updateProfile($request);
+                }
+        
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            });
+        });
+
+        Route::post('/orders', [OrderController::class, 'store']);
+        
+        // Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'updateProfile']);
+
           
     });
     
