@@ -14,6 +14,20 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
+
+
+     public function index()
+     {
+         
+         $products = Product::all();
+ 
+         
+         return response()->json([
+             'products' => $products
+         ], 200);
+     }
+
+     
     public function store(Request $request)
     {
         

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -17,6 +18,10 @@ Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth:sanctum');
 
+  
+    
+    // Fetch all products (accessible by both admins and regular users)
+Route::get('/products-list', [ProductController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products', function (Request $request) {
@@ -42,5 +47,16 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     
             return response()->json(['message' => 'Unauthorized.'], 403);
         });
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/users-list', function (Request $request) {
+                if (Auth::check() && Auth::user()->role === 'admin') {
+                    return app(App\Http\Controllers\UserController::class)->getUsers($request);
+                }
+        
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            });
+        });
+          
     });
     
