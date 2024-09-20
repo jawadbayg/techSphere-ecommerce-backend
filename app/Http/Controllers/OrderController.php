@@ -23,12 +23,10 @@ class OrderController extends Controller
             return response()->json(['message' => 'Product not found.'], 404);
         }
     
-        // Check if the product is in stock
         if (!$product->in_stock) {
             return response()->json(['message' => 'Product is out of stock.'], 400);
         }
-    
-        // Check if requested quantity is available
+
         if ($validated['quantity'] > $product->quantity_available) {
             return response()->json(['message' => 'Insufficient stock.'], 400);
         }
@@ -43,7 +41,6 @@ class OrderController extends Controller
             'status' => 'pending',
         ]);
     
-        // Update product quantity
         $product->quantity_available -= $validated['quantity'];
         if ($product->quantity_available <= 0) {
             $product->in_stock = false;
