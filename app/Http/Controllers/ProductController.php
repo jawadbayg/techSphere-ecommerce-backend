@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+
+
 
 class ProductController extends Controller
 {
@@ -82,7 +86,7 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['message' => 'Product deleted successfully!'], 200);
     }
-    
+
     public function outOfStock()
     {
     $outOfStockProducts = Product::where('quantity_available', 0)->get();
@@ -90,6 +94,55 @@ class ProductController extends Controller
     return response()->json([
         'out_of_stock_products' => $outOfStockProducts
     ], 200);
+    }
+
+    public function addToCart(Request $request)
+    {
+        $request->validate([
+            'product_unique_id' => 'required|exists:products,product_unique_id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        $product = Product::where('product_unique_id', $request->product_unique_id)->first();
+
+        $cart = Cart::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'product_unique_id' => $product->product_unique_id,
+            ],
+            [
+                'quantity' => $request->quantity,
+                'total_price' => $product->price * $request->quantity
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Product added to cart successfully.',
+            'cart' => $cart
+        ], 200);
+    }
+
+    
+    public function viewCart()
+    {
+        $cartItems = Cart::where('user_id', Auth::id())->get();
+
+        return response()->json([
+            'cart_items' => $cartItems
+        ], 200);
+    }
+
+    
+    public function removeFromCart($id)
+    {
+        $cartItem = Cart::where('user_id', Auth::id())->where('id', $id)->first();
+
+        if ($cartItem) {
+            $cartItem->delete();
+            return response()->json(['message' => 'Product removed from cart.'], 200);
+        }
+
+        return response()->json(['message' => 'Item not found in cart.'], 404);
     }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
@@ -92,4 +93,48 @@ class OrderController extends Controller
         $orders->delete();
         return response()->json(['message' => 'Order deleted successfully!'], 200);
     }
+
+    public function placeOrderfromCart(Request $request)
+{
+    
+    $request->validate([
+        'cart_ids' => 'required|array', 
+        'cart_ids.*' => 'exists:carts,id', 
+    ]);
+
+    $userId = Auth::id();
+    $totalPrice = 0;
+
+    
+    $cartItems = Cart::whereIn('id', $request->cart_ids)->where('user_id', $userId)->get();
+
+    
+    if ($cartItems->isEmpty()) {
+        return response()->json(['message' => 'No items in cart to order.'], 400);
+    }
+
+    
+    foreach ($cartItems as $cartItem) {
+        
+        Order::create([
+            'user_id' => $userId,
+            'product_unique_id' => $cartItem->product_unique_id,
+            'quantity' => $cartItem->quantity,
+            'total_price' => $cartItem->total_price,
+            'status' => 'pending', 
+        ]);
+
+        
+        $totalPrice += $cartItem->total_price;
+
+        
+        $cartItem->delete();
+    }
+
+    return response()->json([
+        'message' => 'Order placed successfully!',
+        'total_price' => $totalPrice,
+    ], 201);
+}
+
 }

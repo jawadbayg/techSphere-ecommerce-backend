@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Auth;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -118,6 +119,11 @@ Route::get('/products-list', [ProductController::class, 'index']);
             });
         });
 
+        Route::post('/cart/add', [ProductController::class, 'addToCart']);  // Add product to cart
+        Route::get('/cart/view', [ProductController::class, 'viewCart']); 
+        Route::post('/cart/place-order', [OrderController::class, 'placeOrderfromCart']);  // View cart
+        Route::delete('/cart/remove/{id}', [ProductController::class, 'removeFromCart']);  // Remove product from cart
+    
         // Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'updateProfile']);
 
           
