@@ -21,7 +21,6 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 
   
     
-    // Fetch all products (accessible by both admins and regular users)
 Route::get('/products-list', [ProductController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -48,6 +47,21 @@ Route::get('/products-list', [ProductController::class, 'index']);
     
             return response()->json(['message' => 'Unauthorized.'], 403);
         });
+        Route::delete('/orders/{id}', function ($id) {
+            if (Auth::check() && Auth::user()->role === 'admin') {
+                return app(App\Http\Controllers\OrderController::class)->destroy($id);
+            }
+    
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        });
+
+        Route::delete('/user/{id}', function ($id) {
+            if (Auth::check() && Auth::user()->role === 'admin') {
+                return app(App\Http\Controllers\UserController::class)->destroy($id);
+            }
+    
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        });
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/users-list', function (Request $request) {
@@ -60,6 +74,27 @@ Route::get('/products-list', [ProductController::class, 'index']);
         });
 
         Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/orders-list', function (Request $request) {
+                if (Auth::check() && Auth::user()->role === 'admin') {
+                    return app(App\Http\Controllers\OrderController::class)->getOrders($request);
+                }
+        
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            });
+        });
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/out-of-stock-products', function (Request $request) {
+                if (Auth::check() && Auth::user()->role === 'admin') {
+                    return app(App\Http\Controllers\ProductController::class)->outOfStock($request);
+                }
+        
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            });
+        });
+
+
+        Route::middleware('auth:sanctum')->group(function () {
             Route::put('/update-profile', function (Request $request) {
                 if (Auth::check() && Auth::user()->role === 'user')  {
                     return app(App\Http\Controllers\UserController::class)->updateProfile($request);
@@ -69,8 +104,20 @@ Route::get('/products-list', [ProductController::class, 'index']);
             });
         });
 
+
         Route::post('/orders', [OrderController::class, 'store']);
+        // Route::middleware('auth:api', 'admin')->put('/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::put('/orders/{id}/status', function (Request $request, $id) {
+                if (Auth::check() && Auth::user()->role === 'admin') {
+                    return app(OrderController::class)->updateOrderStatus($request, $id);
+                }
         
+                return response()->json(['message' => 'Unauthorized.'], 403);
+            });
+        });
+
         // Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'updateProfile']);
 
           

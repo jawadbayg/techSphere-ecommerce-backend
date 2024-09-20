@@ -82,4 +82,14 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['message' => 'Product deleted successfully!'], 200);
     }
+    
+    public function outOfStock()
+    {
+    $outOfStockProducts = Product::where('quantity_available', 0)->get();
+
+    return response()->json([
+        'out_of_stock_products' => $outOfStockProducts
+    ], 200);
+    }
+
 }

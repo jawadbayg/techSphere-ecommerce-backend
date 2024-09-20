@@ -9,6 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+
+    public function getOrders(Request $request)
+    {
+        
+        $orders = Order::all();
+        
+        
+        $totalOrders = $orders->count();
+        
+        
+        return response()->json([
+            'total_orders' => $totalOrders,
+            'orders' => $orders
+        ], 200);
+    }
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -51,5 +68,28 @@ class OrderController extends Controller
             'message' => 'Order placed successfully!',
             'order' => $order,
         ], 201);
+    }
+
+    public function updateOrderStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,in process,dispatched,delivered'
+        ]);
+
+        $order = Order::findOrFail($id);
+        
+        $order->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'message' => 'Order status updated successfully!',
+            'order' => $order
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $orders = Order::findOrFail($id);
+        $orders->delete();
+        return response()->json(['message' => 'Order deleted successfully!'], 200);
     }
 }
